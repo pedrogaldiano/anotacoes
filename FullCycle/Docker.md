@@ -361,9 +361,16 @@ Dois jeitos de conseguir startar um container e linká-lo ao meuvolume na pasta 
     // Você precisa de uma imagem base, já que toda imagem é criada com base em outra.
     FROM nginx:latest
 
+    // Diretorio de dentro do container, onde o Docker vai criar uma "pasta"
+    WORKDIR /app
+
+
     // Executa os comandos
-    RUN apt-get update
-    RUN apt-get install vim -y
+    RUN apt-get update && \
+        apt-get install vim -y
+
+    // Copia da pasta do meu computador para dentro do meu container
+    COPY MinhaPasta/ /pasta/do/container/
 
 - **-y** --> confirma automaticamente
 
@@ -373,3 +380,64 @@ Para rodar a imagem
     
     docker run -it nomeNoDockerHub/nginx-com-vim:latest 
     vim oi
+
+
+### Entrypoint Vs CMD
+
+    FROM ubuntu:latest
+
+    // Ao rodar o contaienr, executa echo "Hello World", não é durante o build!
+    
+    // Os parâmetros são fixos
+    ENTRYPOINT ["echo", "Hello]
+
+    // Os dois comandos são substituíveis ao dar o run
+    CMD ["World"]
+
+
+No arquivo docker-entrypoint.sh eu posso permitir que sejam executados comandos depois que o entrypoint for executado. Para isso, basta adicionar:
+    exec "$@"
+no fim do arquivo docker-entrypoint.sh.
+
+
+### Como publicar uma imagem no DockerHub?
+
+Depois de criar uma conta no DockerHub e buildar a sua imagem respeitando SuaContaNoDockerHub/NomeDaImagem.
+
+    docker login
+    docker push SuaContaNoDockerHub/NomeDaImagem
+
+
+## WSL2 - Rodando Linux no Windows
+Windows Subsystem for Linux, um sistema Linux embarcado no Windows via terminal com acesso ao seu disco.
+
+Execução completa do kernel do Linux no WSL2.
+
+    cd mnt
+Acesso à todos os drivers do computador C, D e WSL...
+
+**No file explorer, clique no drive WSL e acesse o "HD" do Linux**
+
+    wsl --shutdown 
+Mata todas as distribuições que estão rodando
+
+    pedro@Pedro MINGW64 ~ cat .wslconfig
+    [wsl2]
+    memory=4GB
+    processors=4
+    swap=1GB
+
+Limites de recursos que o WSL2 tem disponível
+
+**Backup no WSL**
+    C:\Users\pedro\AppData\Local\Packages\CanonicalGroupLimited.Ubuntu_79rhkp1fndgsc\LocalState
+
+    Copiar o ext4
+
+    Quando for reinstalar o ubuntu, usar o mesmo nome e senha e alterar o arquivo ext4
+    (esse arquivo só é gerado depois da primeira inicialização)
+
+**Performance no Docker**
+- Rode os projetos no /home para ganhar performance
+- Adicione: "export DOCKER_BUILDKIT=1" (sem as aspas) no ~.profile do linux (pode usar o vim ~/.profile para abrir e ditar o arquivo)
+
