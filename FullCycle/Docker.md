@@ -408,6 +408,34 @@ Depois de criar uma conta no DockerHub e buildar a sua imagem respeitando SuaCon
     docker push SuaContaNoDockerHub/NomeDaImagem
 
 
+## Network
+
+Um container para cada coisa...
+
+### Tipos de network
+- **bridge** => Default, comunicação entre containers.
+
+- **Host** => Mescla a network do docker com a network do host do docker (minha máquina). Desse modo, o container pode acessar portas disponibilizadas no meu computador(host do docker) e o meu computador pode acessar as portas expostas pelos containers diretamente (sem fazer exposição 8000:8000). - Não funciona no MacOS
+
+- **Overlay** => Comunicação entre containers em diferentes máquinas.
+
+- **maclan** => MAC lan.
+
+- **none** => container isolado.
+
+### Usando Docker network
+
+    docker network ls
+    docker network prune
+
+Os containers por padrão estão em bridge, mas se você rodar eles em uma rede bridge declarada é possível usar os nomes dos containers ao invés dos IPs para se referir à eles.
+
+É possível conectar à uma rede depois que o container já está rodando
+    docker network connect nomeDaRede
+
+**Dá pra conectar um container à uma porta do docker hub (meu pc)**
+
+
 ## WSL2 - Rodando Linux no Windows
 Windows Subsystem for Linux, um sistema Linux embarcado no Windows via terminal com acesso ao seu disco.
 
