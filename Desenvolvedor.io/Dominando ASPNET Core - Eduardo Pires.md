@@ -59,3 +59,23 @@ Um ActionResult<T> permite que você retorne tanto um action result como um tipo
 
 Pra reforçar, a Task só é usada quando você precisa que o método seja assíncrono. Você poderia retornar apenas Task<T> (sem o ActionResult), mas aí você perderia a capacidade de retornar 404, 500 ou 200 e retornaria somente o objeto T. Mas, em alguns casos isso pode fazer sentido, quando você da um get em um conjunto de itens. Você pode receber uma lista de itens ou uma lista vazia não tem uma terceira opção.
 
+---------------------------------------------------
+---------------------------------------------------
+---------------------------------------------------
+---------------------------------------------------
+
+# WEB API
+
+- REST
+É um modelo arquitetural que cria uma camada de abstração para que sistemas distribuídos (APIs) se comuniquem utilizando um protocolo web (HTTP, por exemplo).
+ 
+- REST e Microsserviços
+Os microsserviços levam a arquitetura REST pra um segundo nível. Enquanto que em monolitos uma mesma aplicação tem múltiplas responsabilidades (autenticação, regra de negócio, CRUD...) em uma arquitetura de microsserviços as responsabilidades são bastante segregadas. Cada API faz, idealmente, apenas uma única coisa.
+
+ - MainController
+ Pra poder generalizar algumas coisas na controller, você pode criar uma classe abstrata **MainController** que herda da ControllerBase e tem a notação [ApiController]. Dentro dessa classe abstrata, você cria os métodos protected (para que apenas as classes que herdarem dela tenham acesso) e implementa o que fizer sentido pra você, um CustomResponse ou um validador genérico, por exemplo.
+
+ Classes virtuais podem ser sobrescritas (override)
+
+
+Analyzers -> Me força a implementar a notation do [ProducesResponseType] para ajudar na documentação  
