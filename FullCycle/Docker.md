@@ -205,6 +205,8 @@ O legal do gerenciamento de volumes é a capacidade dele permitir ao container p
 
 ## Comandos
     sudo systemctl start docker
+    // ou
+    sudo service docker start
 Starta o docker engine
 
     docker ps
@@ -280,6 +282,20 @@ Como Remover um container?
     docker rm {NAME} -f
 
 - **-f** --> Force
+
+To remove all containers,
+
+    docker rm -vf $(docker ps -a -q)
+-v: Remove all associated volumes
+
+-f: Forces the removal. Like, if any containers is running, you need -f to remove them.
+
+To remove all images,
+
+    docker rmi -f $(docker images -a -q)
+-a: for all containers, even not running, (or images)
+
+-q: to remove all the details other than the ID of containers (or images)
 
     docker run -d --name {container_name} nginx
 
@@ -469,3 +485,43 @@ Limites de recursos que o WSL2 tem disponível
 - Rode os projetos no /home para ganhar performance
 - Adicione: "export DOCKER_BUILDKIT=1" (sem as aspas) no ~.profile do linux (pode usar o vim ~/.profile para abrir e ditar o arquivo)
 
+## Instalando framework em um container
+
+Antes de sair colocando os comandos no Dockerfile, faça o processo todo no terminal e anote os comandos. Assim, quando terminar você vai ter um passo a passo do que precisa instalar.
+
+
+## Desfazendo a confusão na minha cabeça sobre -d -i -t no Docker
+
+-i -> Interativo
+-t -> pseudo tty (pseudo terminal, na prática é um terminal rodando em um emulador)
+-d -> detach (roda no "background", sem "travar o terminal")
+
+    docker run ubuntu
+- Roda o ubuntu e imediatamente finaliza o processo (já que não tem mais nada pra fazer) matando o container.
+
+    docker run -t ubuntu
+- Executa um pseudo terminal (tty, Standart Output - STDOUT) e mantém o container rodando. Mas, como ele não é interativo (-i) não da pra fazer nada com o pseudo terminal aberto. Quanto você fechar o terminal, a "tarefa" do container acaba e ele é finalizado.
+
+    docker run -i ubuntu
+- O container fica interativo e continua rodando. Mas como ele não aloca um pseudo terminal (-t). Assim os comandos ficam um pouco esquisitos, porquê você está conversando com o container via Standart Input (STDIN).
+
+    docker run -it ubuntu
+- O Container fica interativo e executa o pseudo terminal, agora você pode interagir com o container via STDOUT. Em outras palavras, você abre um pseudo terminal dentro do container enquanto ele existir.
+
+    docker run -dit ubuntu
+- O container fica interativo e executa o pseudo terminal, mas logo em seguida faz o detach (-d), ou seja, não trava o terminal e o container fica rodando em background até ser parado. Você pode fazer um docker attach {nome do container} pra voltar pra usar o terminal de dentro do container.
+
+### Muita gente fala em usar Docker para criar um ambiente de desenvolvimento comum a todos os desenvolvedores, mas como catapimbas fazemos isso??
+
+Sempre que a gente mata um container, os dados armazenados nele são deletados juntos. Então, o primeiro passo para desenvolver dentro de um container é persistir os dados. Para isso, nós usamos volumes!
+
+
+
+
+    docker run --rm -it -v $(pwd)/volume1/:/usr/src/app node:15 bash
+
+O **-v host_path : container_path**, mapeia o host para o container, assim, tudo que eu fizer no container vai refletir no host e tudo que eu fizer no host vai refletir no container.
+
+O mais legal é que se eu stopar o container, não perco nada ao reiniciá-lo. Por outro lado se eu deletar o container, vou precisar recriar a conexão entre o host e o container, já que esse novo container não tem como adivinhar que existia esse mapping.
+
+O **WORKDIR** do Dockerfile é o path de dentro do container!
