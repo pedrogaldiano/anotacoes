@@ -525,3 +525,98 @@ O **-v host_path : container_path**, mapeia o host para o container, assim, tudo
 O mais legal é que se eu stopar o container, não perco nada ao reiniciá-lo. Por outro lado se eu deletar o container, vou precisar recriar a conexão entre o host e o container, já que esse novo container não tem como adivinhar que existia esse mapping.
 
 O **WORKDIR** do Dockerfile é o path de dentro do container!
+
+## Docker Compose
+
+É uma ferramenta complementar ao docker baseado em um arquivo de manifesto (yaml) ele consegue pegar todos os containers que você que subir e ele sobre tudo de uma vez de forma automática.
+
+### docker-comose.yaml
+
+    version: '3'
+
+    //Cada serviço representa um container que a gente quer subir
+    services:
+
+        laravel:
+            build:
+                // pasta em que você tem o dockerfile
+                context: ./laravel
+                dockerfile: Dockerfile.prod
+            image: wesley/laravel:prod
+            container_name: laravel
+            networks:
+                - laranet
+
+        nginx:
+            context: ./nginx
+            dockerfile: Dockerfile.prod
+            image: wesley/nginx:prod
+            container_name: nginx
+            networks:
+                - laranet
+            ports:
+                - "8080:80"
+        
+        networks:
+            laranet:
+                driver: bridge
+    
+
+libera o terminal (detach)
+    docker compose up -d
+    
+Rebuilda e sobe, útil pra quando você altera os arquivos do dockerfile
+    docker compose up -d --build
+
+
+### Banco de dados SQL
+
+    version: '3'
+
+    services:
+
+        app:
+            build:
+                context: node
+            container_name: app
+            entrypoint: dockerize -wait tcp://db:3306 -timeout 20s docker-entrypoint.sh
+            networks:
+                - node-network
+            volumes:
+                - ./node:/usr/src/app
+            tty: true
+            ports:
+                -"3000:3000"
+             // O depends só garante que o db vai subir primeiro, ele pode não estar pronto. 
+             // Solução - talvez já esteja defasado  ->>  para garantir que o app só vai rodar qnd o db estiver pronto é preciso usar o Dockerize e Wait for 
+            depends_on:
+                - db
+
+        db:
+            image: mysql:5.7
+            // Roda logo depois do entrypoint padrão do docker
+            command: --innodb-use-native-aio=0
+            container_name: db
+            restart: always
+            tty: true
+            // host:container - mapeia o host no container, assim eu não perco os dados caso delete o container
+            volumes:
+                - ./mysql:var/lib/mysql
+            // Variáveis de ambiente, já da pra criar o banco e definir o usuário e senha
+            environment:
+                - MYSQL_DATABASE=nodedb
+                - MYSQL_ROOT_PASSWORD=root //Não precisa mais
+                - MYSQL_USER=root
+            networks:
+                - node-network
+
+    networks:
+        node-network:
+            driver: bridge
+
+
+### NÃO PRECISA DERRUBAR TUDO TODA VEZ QUE VOCÊ FIZER UMA ALTERAÇÃO NOS ARQUIVOS
+
+Quando você faz alterações nos arquivos de um container (sem mexer no Dockerfile ou no yaml), você pode acessar o terminal do container (pode ser que precise ativar o tty pra isso) e simplesmente rodar um dotnet run dentro do container 
+
+**CARA SE FOR ISSO MESMO É FODA**
